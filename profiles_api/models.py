@@ -1,6 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser,PermissionsMixin,BaseUserManager
+from django.utils import timezone
 # Create your models here.
+
+
+class Organization(models.Model):
+    name = models.CharField(max_length=255,unique=True)
+    description = models.TextField(default="nothing")
+
+
 class UserProfileManager(BaseUserManager):
     def create_user(self, email, name, password = None):
         if not email:
@@ -17,13 +25,19 @@ class UserProfileManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+class Roll(models.TextChoices):
+    ADMIN = 'AD', 'admin'
+    MANAGER = 'MG', 'manager'
+    WORKER = 'WK', 'worker'
+    ORG_WORKER = 'OW', 'org_worker'
 
 class UserProfile(AbstractBaseUser,PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
+    roll = models.CharField(max_length=2, choices=Roll.choices, default=Roll.WORKER)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-
     objects = UserProfileManager()
 
     USERNAME_FIELD = 'email'
@@ -35,3 +49,38 @@ class UserProfile(AbstractBaseUser,PermissionsMixin):
         return self.name
     def __str__(self):
         return self.email
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(roll__in=Roll.values),
+                name="%(app_label)s_%(class)s_roll_valid",
+            )
+        ]
+
+
+class Request(models.Model):
+    from_user = models.ForeignKey(UserProfile,related_name='requester', on_delete=models.CASCADE)
+    job_title = models.CharField(max_length=255,choices=Roll.choices)
+    to_see = models.CharField(max_length=255,choices=Roll.choices)
+    organization = models.ForeignKey(Organization,on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(job_title__in=Roll.values),
+                name="%(app_label)s_%(class)s_job_title_valid",
+            ),
+            models.CheckConstraint(
+                check=models.Q(to_see__in=Roll.values),
+                name="%(app_label)s_%(class)s_to_see_valid",
+            )
+        ]
+
+
+class duty(models.Model):
+    persons = models.ManyToManyField(UserProfile)
+    title = models.CharField(max_length=255)
+    duty_description = models.TextField(default="empty")
+    date_posted = models.DateTimeField(default=timezone.now)
+    deadline = models.DateTimeField()
