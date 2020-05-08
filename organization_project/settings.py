@@ -78,8 +78,12 @@ WSGI_APPLICATION = 'organization_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'org_project',
+        'USER': 'org_user',
+        'PASSWORD': 'MonaAmin7674',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
 
