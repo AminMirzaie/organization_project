@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser,PermissionsMixin,BaseUserManager
 from django.utils import timezone
+from datetime import datetime,timedelta
 # Create your models here.
 
 
@@ -8,18 +9,21 @@ class Organization(models.Model):
     name = models.CharField(max_length=255,unique=True)
     description = models.TextField(default="nothing")
 
+    def __str__(self):
+        return self.name
+
 
 class UserProfileManager(BaseUserManager):
-    def create_user(self, email, name, password = None):
+    def create_user(self, email, name, roll, organization, password = None):
         if not email:
             raise ValueError('user must have an email adress')
         email = self.normalize_email(email)
-        user = self.model(email=email, name=name)
+        user = self.model(email=email, name=name,roll = roll, organization = organization)
         user.set_password(password)
         user.save(using=self._db)
         return user
     def create_superuser(self, email, name, password):
-        user = self.create_user(email, name, password)
+        user = self.create_user(email= email, name= name, roll=Roll.ADMIN, organization=None, password=password)
         user.is_superuser = True
         user.is_staff = True
         user.save(using=self._db)
@@ -34,7 +38,7 @@ class Roll(models.TextChoices):
 class UserProfile(AbstractBaseUser,PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    roll = models.CharField(max_length=2, choices=Roll.choices, default=Roll.WORKER)
+    roll = models.CharField(max_length=10, choices=Roll.choices, default=Roll.WORKER)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -65,6 +69,8 @@ class Request(models.Model):
     to_see = models.CharField(max_length=255,choices=Roll.choices)
     organization = models.ForeignKey(Organization,on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.from_user.name +"  "+self.job_title
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -78,9 +84,17 @@ class Request(models.Model):
         ]
 
 
+
 class duty(models.Model):
-    persons = models.ManyToManyField(UserProfile)
+    owner = models.ForeignKey(UserProfile,on_delete=models.CASCADE,related_name="owner")
+    persons = models.ManyToManyField(UserProfile,related_name="persons")
     title = models.CharField(max_length=255)
     duty_description = models.TextField(default="empty")
-    date_posted = models.DateTimeField(default=timezone.now)
-    deadline = models.DateTimeField()
+    date_posted = models.DateTimeField(default=datetime.now())
+    deadline = models.DateTimeField(default=datetime.now()+timedelta(days=7))
+    organization = models.ForeignKey(Organization,on_delete=models.CASCADE)
+
+
+
+    def __str__(self):
+        return self.title
