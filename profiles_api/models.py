@@ -90,8 +90,8 @@ class duty(models.Model):
     persons = models.ManyToManyField(UserProfile,related_name="persons")
     title = models.CharField(max_length=255)
     duty_description = models.TextField(default="empty")
-    date_posted = models.DateTimeField(default=datetime.now())
-    deadline = models.DateTimeField(default=datetime.now()+timedelta(days=7))
+    date_posted = models.DateTimeField(default=timezone.now())
+    deadline = models.DateTimeField(default=timezone.now())
     organization = models.ForeignKey(Organization,on_delete=models.CASCADE)
 
 

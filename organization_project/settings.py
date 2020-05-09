@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'organization_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'org_project',
         'USER': 'org_user',
         'PASSWORD': 'MonaAmin7674',
