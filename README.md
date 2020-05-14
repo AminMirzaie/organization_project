@@ -135,6 +135,7 @@ similar to Manager, org_worker can define duty, but in persons part this should 
 ## the features that dont exist in senaio
 the admin can change the roll of each user in system buy calling /profile/user_id and call put or patch.<br>
 admins can also change the organization of user in similar manner.
+you can alsp fire an org_worker. for doing this if you are admin, you can simply change the roll by patch method and this url: /profile/<org_worker_id> and if you are manager with method delete and /profile/<org_worker_id> you can fire a person that is in your organization.
 
 
 ## Meta
