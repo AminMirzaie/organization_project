@@ -4,7 +4,7 @@
 
 the purpose of this project is to organize and share duties among the Managers and partners of companies.
 by using this project you can easily see the assignments that assigned to you, 
-and also you are ableto follow up the assignment that you declare for your workers.
+and also you are able to follow up the assignment that you declare for your workers.
 
 
 ## prerequisites
